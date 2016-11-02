@@ -1,0 +1,144 @@
+import edu.princeton.cs.algs4.StdRandom;
+import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+import java.util.Random;
+
+public class Percolation {
+   
+   int size;
+   int[][] workSite; 
+   WeightedQuickUnionUF wquArray;    
+    
+    
+    
+   public Percolation(int n) { // create n-by-n grid, with all sites blocked
+       
+       this.size = n;
+       this.workSite = new int[this.size][this.size];
+       WeightedQuickUnionUF newArray = new WeightedQuickUnionUF(size*size+2);
+       for( int i=0; i < this.size; i++  ) {
+       
+           for( int j=0; j < this.size; j++ ) {
+           
+           workSite[i][j] = 1;
+           
+           }
+        
+           
+       }
+   }
+   
+   public int size() {
+       
+       return this.size;
+   }
+       
+   public void open(int i, int j) {         // open site (row i, column j) if it is not open already
+    
+       try {
+           
+           if(workSite[i-1][j-1] == 1){    
+              
+              workSite[i-1][j-1] = 0;
+              if(i-1==0) {
+                  workSite[i-1][j-1]= -1;
+                  wquArray.union(0,j);                  
+              }
+              if(i-1== size+1) {
+                  wquArray.union(size*i+j,size*size+1);              
+              }
+              if ( i-1!=0 && isFull(i-2,j-1) ) { 
+                  workSite[i-1][j-1] = -1;
+                  wquArray.union(size*(i-1)+j,size*(i-2)+j-1);  
+              }
+             
+              if ( j-1!=0 && isFull(i-1,j-2)) { 
+                  wquArray.union(size*(i-1)+1,size*(i-1)+j-1);
+                  workSite[i-1][j-1] = -1;
+              }
+              
+       
+           }
+       } catch(ArrayIndexOutOfBoundsException e) {
+       throw new IndexOutOfBoundsException();
+       }
+   }
+   public boolean isOpen(int i, int j){     // is site (row i, column j) open?
+    
+       try{
+           
+           if(workSite[i-1][j-1] == 0){ return true; }
+       
+           else { return false; }
+           
+       }catch(ArrayIndexOutOfBoundsException e) {
+       throw new IndexOutOfBoundsException();
+       }
+   }
+   
+   public boolean isFull(int i, int j) {    // is site (row i, column j) full? 
+       
+       try{
+           
+           if(workSite[i-1][j-1] == -1){ return true; }
+       
+           else { return false; }           
+           
+       }catch(ArrayIndexOutOfBoundsException e) {
+       throw new IndexOutOfBoundsException();
+       }    
+       
+   }
+   
+   public boolean percolates() {             // does the system percolate?
+            
+    if( wquArray.connected(0,size*size+1)) 
+        return true;
+    else
+        return false;    
+   }
+   public void print() {
+           for( int i=0; i < this.size; i++  ) {
+       
+               for( int j=0; j < this.size; j++ ) {
+           
+                   System.out.print(workSite[i][j]);
+                   
+               }
+               System.out.println(" ");
+           }
+       
+       }    
+
+   public static void main(String[] args)  // test client (optional)
+   {
+       Percolation newPerc = new Percolation(10);
+       final Random random = new Random();
+       int i = 0;
+       int a = -100;
+       int b = -100;
+       if(newPerc.percolates()) newPerc.print();
+       while( newPerc.percolates() == false ) {
+           
+           a = random.nextInt(newPerc.size());
+           b = random.nextInt(newPerc.size());
+           if(newPerc.isOpen(a,b) == false ) {
+           newPerc.open(a,b);
+           i++;
+           }
+           
+           
+       
+       }
+         //  System.out.println();
+         //  newPerc.print();
+     //  for(int i=0; i< 8 ; i++) {
+       
+      //     newPerc.open(random.nextInt(newPerc.size()),random.nextInt(newPerc.size()));
+       
+       //}
+   
+       newPerc.print();
+       if (newPerc.percolates()) {  System.out.println(i); }
+   }
+
+}
