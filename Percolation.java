@@ -1,4 +1,3 @@
-import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 import java.util.Random;
 
@@ -16,21 +15,19 @@ public class Percolation {
        this.workSite = new int[this.size][this.size];
        unionArray = new WeightedQuickUnionUF(this.size * this.size + 2);
        
-       for( int i=0; i < this.size; i++  ) {
-       
-           for( int j=0; j < this.size; j++ ) {
+       for (int i = 0; i < this.size; i++) {
+           
+           for (int j = 0; j < this.size; j++) {
            
            workSite[i][j] = 1;
            
-           }
-        
-           
+           }  
        }
    }
    
     // validate that i is a valid index
     private void validate(int i) {
-           if (i < 1 || i >= size+1) {
+           if (i < 1 || i >= size + 1) {
             throw new IndexOutOfBoundsException("index " + i + " is not between 1 and " + (size + 1));  
         }
     }
@@ -44,40 +41,100 @@ public class Percolation {
    public void open(int i, int j) {         // open site (row i, column j) if it is not open already
     
            
-         validate(i); //check
+         validate(i); //  check
          validate(j);
          workSite[i-1][j-1] = 0; // now it is opened
          
-         if( i-1 == 0 ) { unionArray.union(0,j); }
-         if( i-1 == size - 1  ) { unionArray.union((size*(i-1)+j),(size*size + 1)); }
+         if (i - 1 == 0) { 
+             
+             unionArray.union(0, j);
+             toFull(i, j);
+         }
+         
+         if (i - 1 == size - 1) { 
+             
+             unionArray.union((size*(i - 1) + j), (size*size + 1)); 
+         }
+         
+         if ((i - 2 >= 0) && (isFull(i - 1, j))) { 
+             
+             toFull(i, j);
+             unionArray.union((size * (i - 1) +j), (size*(i - 2) + j));
+         }
+         
+         if ((j - 2 >= 0) && (isFull(i, j - 1))) {
+             
+             toFull(i, j);
+             unionArray.union((size*(i - 1) + j), (size*(i - 1) + j - 1));
+         
+         }
+         
+         if ((i <= size - 1) && (isFull(i + 1, j))) {
+             
+             toFull(i, j);
+             unionArray.union((size*(i - 1) + j), (size*i + j)); 
+         }
+         
+         if ((j <= size - 1) && (isFull(i, j + 1))) { 
+             
+             toFull(i, j);
+             unionArray.union((size*(i - 1) + j), (size*(i - 1) + j + 1));
+             
+         }    
+            
            
       
    }
    
+   private void toFull(int i, int j) {
+   
+       validate(i);
+       validate(j);
+       workSite[i-1][j-1] = 2;
+       if ((i - 2 >= 0) && (isOpen(i - 1, j)) && (!isFull(i - 1, j))) { 
+           toFull(i - 1, j);
+           unionArray.union((size*(i - 1) + j), (size*(i - 2) + j));
+       }
+       if ((j-2 >= 0) && (isOpen(i, j - 1)) && (!isFull(i, j - 1))) { 
+           toFull(i, j - 1);
+           unionArray.union((size*(i - 1) + j), (size*(i - 1)+j-1));
+       }
+       if ((i <= size - 1) && (isOpen(i + 1, j))&& (!isFull(i + 1, j))) {
+           
+           toFull(i + 1, j);
+           unionArray.union((size*(i - 1) + j), (size*i + j));
+       }
+       if ((j <= size - 1) && (isOpen(i, j + 1))&& (!isFull(i, j + 1))) { 
+           
+           toFull(i, j + 1);
+           unionArray.union((size*(i - 1) + j), (size*(i - 1) + j + 1));
+       
+       }
+       
+   
+   }
+   
    public boolean isFull(int i, int j) {    // is site (row i, column j) full? 
        
-       try{
+     
+           validate(i);
+           validate(j);
            
-          print();
+           return (workSite[i-1][j-1] == 2);
            
-       }catch(ArrayIndexOutOfBoundsException e) {
-       throw new IndexOutOfBoundsException();
-       }    
-      
-       return true;
+   
+           
+           
   }
    
    public boolean isOpen(int i, int j) {    // is site (row i, column j) open? 
        
-       try{
+           validate(i);
+           validate(j);
            
-          ;
+           return (workSite[i-1][j-1] == 0) || (workSite[i-1][j-1] == 2);
            
-       }catch(ArrayIndexOutOfBoundsException e) {
-       throw new IndexOutOfBoundsException();
-       }    
-       
-       return true;
+
    }
    
 
@@ -85,41 +142,39 @@ public class Percolation {
    public boolean percolates() {             // does the system percolate?
             
 
-        return true;    
+        return unionArray.connected(0, size*size + 1);    
    }
    
    
    
    
-   public void print() {
-    
-           for( int i=0; i < this.size; i++  ) {
-       
-               for( int j=0; j < this.size; j++ ) {
-           
-                   System.out.print(workSite[i][j]);
-                   
-               }
-               
-               System.out.println(" ");
-           }
-       
-           System.out.println(unionArray.find(1));
-           System.out.println(unionArray.find(26));
-           
-       }    
+  
 
    public static void main(String[] args)  // test client (optional)
    {
        Percolation newPerc = new Percolation(5);
     
        final Random random = new Random();
+       int a = -15;
+       int b = -15;
        
-       newPerc.print();
-       newPerc.open(1,1);
-       newPerc.print();
-       newPerc.open(5,5);
-       newPerc.print();
+       for (int i = 1; i < 6; i++) {
+       
+           for (int j = 1; j < 6; j++) {
+           
+           a = random.nextInt(5);
+           b = random.nextInt(5);
+           a++;
+           b++;
+           newPerc.open(a, b);
+           
+           
+           
+           
+           }
+       
+       }
+
        
        
 
